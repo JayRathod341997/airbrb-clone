@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 const Header = () => {
   return (
     <header className="flex  justify-between">
-      <a href="" className="flex items-center gap-1">
+      <Link to={'/'} className="flex items-center gap-1">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -19,7 +19,7 @@ const Header = () => {
           />
         </svg>
         <span className="font-bold text-xl">AirBNC</span>
-      </a>
+      </Link>
 
       <div className="flex gap-2 border border-gray-500 rounded-full px-2 py-1 shadow-md shadow-gray-300">
         <div>Anywhere</div>
