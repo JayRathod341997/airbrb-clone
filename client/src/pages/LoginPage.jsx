@@ -1,14 +1,20 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useContext, useState } from "react";
+import { Link, Navigate } from "react-router-dom";
 import axios from "axios";
+import { UserContext } from "../UserContextProvider";
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [redirect, setRedirect] = useState("");
+  const { setUser } = useContext(UserContext);
   const formSubmitHandler = async (event) => {
     event.preventDefault();
     try {
-      await axios.post("/login", { email, password });
+      const { data } = await axios.post("/login", { email, password });
       alert("Login successfully");
+
+      setUser(data); // fetch user document from mongodb -> await User.findOne({ email })
+      setRedirect(true); // Redirect to home page after successful login
     } catch (e) {
       console.error(e);
       alert("Invalid credentials. Please try again");
@@ -16,6 +22,10 @@ const LoginPage = () => {
       // setPassword("");
     }
   };
+
+  if (redirect) {
+    return <Navigate to={"/"} />;
+  }
   return (
     <div className="mt-4 grow flex items-center justify-around">
       <div className="mb-64">

@@ -3,6 +3,7 @@ const cors = require("cors");
 const bcrypt = require("bcryptjs"); // for encrypting the password while storing on the DB
 const jwt = require("jsonwebtoken"); // for setting jwt token as cookies
 const User = require("./models/User.js");
+const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
 
 // Access variable through .env file
@@ -12,6 +13,7 @@ const jwtSecret = "secreteToken";
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 app.use(
   cors({
     origin: ["http://localhost:5173"], // for resolving the CORS error
@@ -26,13 +28,13 @@ app.get("/test", (req, res) => {
 });
 
 app.post("/register", async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password } = req.body; // handled by express.json()
   try {
     // Create new user in the DB
     const userDoc = await User.create({
       name,
       email,
-      password: bcrypt.hashSync(password, bcryptSalt),
+      password: bcrypt.hashSync(password, bcryptSalt), // hashSync so that await is not required
     });
     res.json(userDoc);
   } catch (e) {
@@ -57,18 +59,31 @@ app.post("/login", async (req, res) => {
 
     // set jwt token in header
     jwt.sign(
-      { email: user.email, email_id: user._id },
+      { email: user.email, id: user._id }, // user.email and  user._id fetch from MongoDb
       jwtSecret,
       {}, // option
       (err, token) => {
         //callback for getting token and send as a response
         if (err) throw err;
-        res.cookie("token", token).json({ message: "Logged in successfully" });
+        res.cookie("token", token).json(user);
       }
     );
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.get("/profile", (req, res) => {
+  const { token } = req.cookies; // handled by external package require(cookie-parser)
+  if (token) {
+    jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+      if (err) throw err;
+      const { email, name, _id } = await User.findById(userData.id); // defined by jwt.sign
+      res.send({ email, name, _id });
+    });
+  } else {
+    res.json(null);
   }
 });
 
