@@ -3,6 +3,7 @@ const cors = require("cors");
 const bcrypt = require("bcryptjs"); // for encrypting the password while storing on the DB
 const jwt = require("jsonwebtoken"); // for setting jwt token as cookies
 const User = require("./models/User.js");
+const imageDownloader = require("image-downloader"); // download the image from the url
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
 
@@ -20,6 +21,7 @@ app.use(
     credentials: true,
   })
 );
+app.use("/uploads", express.static(__dirname + "/uploads"));
 const bcryptSalt = bcrypt.genSaltSync(10); // define the complexity
 mongoose.connect(process.env.MONGOOSE_URL); // connect with remote MongoDB
 
@@ -89,6 +91,24 @@ app.get("/profile", (req, res) => {
 
 app.post("/logout", (req, res) => {
   res.cookie("token", "").json(true);
+});
+
+app.post("/upload-by-link", async (req, res) => {
+  const { link } = req.body; // get the image link
+  console.log(link);
+
+  const newName = "photo" + Date.now() + ".jpg"; // store with .jpg
+  await imageDownloader.image({
+    url: link,
+    dest: __dirname + "/uploads/" + newName,
+  });
+
+  // const url = await uploadToS3(
+  //   "/tmp/" + newName,
+  //   newName,
+  //   mime.lookup("/tmp/" + newName)
+  // );
+  res.json(newName);
 });
 
 app.listen(4000, () => {
