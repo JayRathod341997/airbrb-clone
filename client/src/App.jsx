@@ -7,7 +7,9 @@ import axios from "axios";
 import UserContextProvider from "./UserContextProvider";
 import AccountPage from "./pages/AccountPage";
 
-axios.defaults.baseURL = "http://localhost:4000";
+// axios.defaults.baseURL = "http://localhost:4000";
+axios.defaults.baseURL = import.meta.env.VITE_BASE_URL;
+
 axios.defaults.withCredentials = true; // for storing cooking on the webpage
 function App() {
   return (
